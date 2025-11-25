@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IpCalc by Rvd</title>
+  <style>
+    :root{
+      --bg:#0d0f11; --card:#161a1d; --muted:#7d8b92; --accent:#35c6d8; --danger:#ff4a60;
+      --radius:10px; --shadow:0 6px 22px rgba(0,0,0,0.45);
+      font-family: Inter, system-ui;
+      color-scheme: dark;
+    }
+    *{box-sizing:border-box}
+    body{background:var(--bg); color:#e8eef0; padding:20px; margin:0}
+    .wrap{max-width:920px; margin:0 auto}
+
+    header{display:flex; gap:16px; align-items:center; margin-bottom:18px}
+    h1{font-size:20px; margin:0 0 4px}
+    p.lead{margin:0; color:var(--muted); font-size:13px}
+
+    .main{display:grid; grid-template-columns:1fr 360px; gap:18px}
+    .left, .right { background:var(--card); padding:16px; border-radius:var(--radius); box-shadow:var(--shadow); }
+
+    .small{font-size:12px; color:var(--muted); display:block; margin-bottom:4px}
+    .muted{color:var(--muted); font-size:12px}
+    .big{font-size:18px; font-weight:600}
+
+    .boxes{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .issue {
+      border-radius:10px; padding:12px; background:#1c2124;
+      border:1px solid #2a2f33; cursor:pointer; display:flex; flex-direction:column;
+      gap:10px; min-height:86px; transition:0.12s;
+    }
+    .issue.checked{box-shadow:0 8px 24px rgba(53,198,216,0.18); border-color:var(--accent)}
+    .issue:hover{transform:translateY(-3px)}
+    .issue-title{font-weight:600; font-size:14px}
+    .issue-sub{font-size:12px;color:var(--muted)}
+    .issue-head{display:flex; align-items:center; gap:8px}
+
+    .parts-row{display:flex; justify-content:space-between; gap:8px}
+    .field{flex:1; font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:4px}
+    .field input{
+      width:100%; padding:6px 8px; border-radius:8px;
+      border:1px solid #333; background:#111; color:#e8eef0;
+      font-size:13px;
+    }
+
+    select{
+      background:#111; color:#e8eef0; border:1px solid #333;
+      padding:8px; border-radius:8px; width:100%; margin-bottom:8px;
+      font-size:14px;
+    }
+
+    .row{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px}
+    .summary-box{background:#1c2124; border:1px solid #2a2f33; padding:12px; border-radius:8px}
+
+    .line{display:flex; justify-content:space-between; padding:8px; border-radius:6px; background:#111; font-size:13px}
+    .accent{color:var(--accent); font-weight:700}
+
+    .contact-fields {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-group label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #111;
+      color: #e8eef0;
+      font-size: 13px;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .input-group input::placeholder {
+      color: #555;
+    }
+
+    #addTradeBtn {
+      margin-top: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: #0d0f11;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s, transform 0.1s;
+      font-size:14px;
+    }
+    #addTradeBtn:hover {
+      background: #22b6ce;
+      transform: translateY(-1px);
+    }
+
+    #storedTrades {
+      margin-top: 16px;
+      background: #22282c;
+      padding: 12px;
+      border-radius: var(--radius);
+      max-height: 300px;
+      overflow-y: auto;
+      font-size:13px;
+    }
+    .trade-item {
+      background: #11151a;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border:1px solid #2a2f33;
+    }
+    .trade-title {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .trade-meta {
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+    .trade-contact {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .trade-issues {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom:4px;
+    }
+    .trade-totals{
+      font-size:12px;
+    }
+    .trade-link {
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .trade-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .trade-link a:hover {
+      text-decoration: underline;
+    }
+
+    .adjustable-number {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .adjustable-number input[type="number"] {
+      width: 80px;
+      font-weight: 600;
+      color: var(--accent);
+      background-color: #111;
+      border-radius: 8px;
+      border: 1px solid #333;
+      text-align: center;
+      padding: 4px 8px;
+      font-size: 18px;
+      -moz-appearance: textfield; /* Remove default spin buttons */
+    }
+    .adjustable-number input[type="number"]::-webkit-inner-spin-button,
+    .adjustable-number input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .adjust-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .adjust-button {
+      cursor: pointer;
+      background: var(--accent);
+      border: none;
+      border-radius: 4px;
+      width: 22px;
+      height: 14px;
+      padding: 0;
+      color: #0d0f11;
+      font-weight: 700;
+      line-height: 12px;
+      user-select: none;
+    }
+    .adjust-button:active {
+      background: #22b6ce;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>IPPM Calculator</h1>
+      <p class="lead">by Tal Ravid</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="left">
+      <label class="small">Model (256GB)</label>
+      <select id="modelSelect">
+        <option value="16promax">iPhone 16 Pro Max</option>
+        <option value="15promax">iPhone 15 Pro Max</option>
+      </select>
+
+      <div class="boxes" id="issuesGrid"></div>
+
+      <div class="contact-fields">
+        <div class="input-group">
+          <label for="tradeUrl">Marketplace listing URL (optional)</label>
+          <input 
+            type="url" 
+            id="tradeUrl" 
+            placeholder="https://www.yad2.co.il/... or Facebook link"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="contact-row">
+          <div class="input-group">
+            <label for="sellerPhone">Phone</label>
+            <input 
+              type="tel" 
+              id="sellerPhone" 
+              placeholder="05x-xxx-xxxx"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="sellerCity">City</label>
+            <input 
+              type="text" 
+              id="sellerCity" 
+              placeholder="Tel Aviv, Jerusalem..."
+              autocomplete="off"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button id="addTradeBtn">ADD new trade</button>
+
+      <div id="storedTrades"></div>
+    </section>
+
+    <aside class="right">
+      <div class="row">
+        <div>
+          <div class="muted">Used‑Like‑New price</div>
+          <div class="adjustable-number">
+            <input type="number" id="likeNewInput" step="5" min="0" />
+            <div class="adjust-buttons">
+              <button class="adjust-button" id="likeNewUp">&#9650;</button>
+              <button class="adjust-button" id="likeNewDown">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Selected issues</div>
+          <div id="selectedCount" class="big">0</div>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div class="totals">
+          <div class="line">
+            <div class="muted">Parts cost</div>
+            <div id="partsTotal">₪0</div>
+          </div>
+          <div class="line">
+            <div class="muted">Labor cost</div>
+            <div id="laborTotal">₪0</div>
+          </div>
+          <div class="line">
+            <div class="muted">Repair total</div>
+            <div id="repairTotal">₪0</div>
+          </div>
+          <div class="line">
+            <div class="muted">Profit</div>
+            <div id="profitDisplay">₪0</div>
+          </div>
+          <div class="line">
+            <div style="font-weight:700">Offer / Fair buy price</div>
+            <div class="adjustable-number">
+              <input type="number" id="offerInput" step="5" min="0" />
+              <div class="adjust-buttons">
+                <button class="adjust-button" id="offerUp">&#9650;</button>
+                <button class="adjust-button" id="offerDown">&#9660;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ----- Configuration -----
+
+  const MODELS = {
+    '16promax': {
+      label: 'iPhone 16 Pro Max (256GB)',
+      defaultLikeNew: 3200,
+      defaultOffer: 3000
+    },
+    '15promax': {
+      label: 'iPhone 15 Pro Max (256GB)',
+      defaultLikeNew: 2400,
+      defaultOffer: 2200
+    }
+  };
+
+  const DEFAULT_ISSUES = [
+    { id: 'broken_back',  title: 'Broken Back Glass',         parts: 25,          labor: 275 },
+    { id: 'broken_screen',title: 'Broken Screen (glassOnly)', parts: 50,          labor: 700 },
+    { id: 'broken_lcd',   title: 'Broken Screen + LCD',       parts: 400 * 1.17,  labor: 400 },
+    { id: 'battery_low',  title: 'Battery <80%',              parts: 60,          labor: 190 },
+    { id: 'camera_issues',title: 'Camera Replacement',        parts: 180,         labor: 420 },
+    { id: 'lens_broken',  title: 'Broken Lens x1',            parts: 25,          labor: 250 }
+  ];
+
+  const TRADE_STORAGE_KEY = 'phoneTrades';
+
+  // ----- State -----
+
+  let issues = deepClone(DEFAULT_ISSUES);
+  const selectedIssueIds = new Set();
+
+  // Adjustable prices state
+  let adjustableLikeNew = 0;
+  let adjustableOffer = 0;
+
+  // ----- DOM cache -----
+
+  const dom = {
+    issuesGrid: document.getElementById('issuesGrid'),
+    modelSelect: document.getElementById('modelSelect'),
+    likeNewInput: document.getElementById('likeNewInput'),
+    likeNewUp: document.getElementById('likeNewUp'),
+    likeNewDown: document.getElementById('likeNewDown'),
+    partsTotalEl: document.getElementById('partsTotal'),
+    laborTotalEl: document.getElementById('laborTotal'),
+    repairTotalEl: document.getElementById('repairTotal'),
+    profitDisplayEl: document.getElementById('profitDisplay'),
+    offerInput: document.getElementById('offerInput'),
+    offerUp: document.getElementById('offerUp'),
+    offerDown: document.getElementById('offerDown'),
+    selectedCountEl: document.getElementById('selectedCount'),
+    tradeUrlInput: document.getElementById('tradeUrl'),
+    sellerPhoneInput: document.getElementById('sellerPhone'),
+    sellerCityInput: document.getElementById('sellerCity'),
+    addTradeBtn: document.getElementById('addTradeBtn'),
+    storedTradesEl: document.getElementById('storedTrades')
+  };
+
+  // ----- Utilities -----
+
+  function deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function formatCurrency(value) {
+    const rounded = Math.round(Number.isFinite(value) ? value : 0);
+    return '₪' + rounded;
+  }
+
+  function getCurrentModelKey() {
+    return dom.modelSelect.value;
+  }
+
+  function getCurrentModelConfig() {
+    return MODELS[getCurrentModelKey()];
+  }
+
+  function getSelectedIssues() {
+    return issues.filter(issue => selectedIssueIds.has(issue.id));
+  }
+
+  function isValidUrl(str) {
+    if (!str || !str.trim()) return false;
+    try {
+      const url = new URL(str);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  // ----- Calculation logic -----
+
+  function calculateTotals() {
+    const selected = getSelectedIssues();
+
+    let parts = 0;
+    let labor = 0;
+
+    selected.forEach(issue => {
+      parts += Number(issue.parts) || 0;
+      labor += Number(issue.labor) || 0;
+    });
+
+    const repair = parts + labor;
+    // Use adjustableLikeNew and adjustableOffer for calculations
+    // Ensure offer does not exceed likeNew
+    const likeNew = adjustableLikeNew;
+    let offer = adjustableOffer;
+    if (offer > likeNew) offer = likeNew;
+
+    // Profit = likeNew - offer - parts
+    const profit = likeNew - offer - parts;
+
+    return {
+      likeNew,
+      selectedIssues: selected,
+      parts,
+      labor,
+      repair,
+      offer,
+      profit
+    };
+  }
+
+  function updateSummary() {
+    const totals = calculateTotals();
+
+    // Update adjustable inputs display if needed (only when model changes)
+    // dom.likeNewInput.value = adjustableLikeNew; // no because editable by user
+    // dom.offerInput.value = adjustableOffer;
+
+    dom.partsTotalEl.textContent    = formatCurrency(totals.parts);
+    dom.laborTotalEl.textContent    = formatCurrency(totals.labor);
+    dom.repairTotalEl.textContent   = formatCurrency(totals.repair);
+    dom.profitDisplayEl.textContent = formatCurrency(totals.profit);
+
+    // Show likeNew and offer inputs formatted with ₪ for display
+    dom.likeNewInput.value = totals.likeNew;
+    dom.offerInput.value = totals.offer;
+
+    dom.selectedCountEl.textContent = selectedIssueIds.size;
+
+    return totals;
+  }
+
+  // ----- Issue cards UI -----
+
+  function buildIssueCard(issue) {
+    const card = document.createElement('div');
+    card.className = 'issue';
+    card.dataset.id = issue.id;
+    if (selectedIssueIds.has(issue.id)) {
+      card.classList.add('checked');
+    }
+
+    const head = document.createElement('div');
+    head.className = 'issue-head';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = selectedIssueIds.has(issue.id);
+
+    const title = document.createElement('div');
+    title.className = 'issue-title';
+    title.textContent = issue.title;
+
+    head.appendChild(checkbox);
+    head.appendChild(title);
+
+    const sub = document.createElement('div');
+    sub.className = 'issue-sub';
+    sub.textContent = 'Parts + labor (editable per trade)';
+
+    const row = document.createElement('div');
+    row.className = 'parts-row';
+
+    const partsField = document.createElement('div');
+    partsField.className = 'field';
+    const partsLabel = document.createElement('span');
+    partsLabel.textContent = 'Parts';
+    const partsInput = document.createElement('input');
+    partsInput.type = 'number';
+    partsInput.min = '0';
+    partsInput.value = issue.parts;
+    partsInput.inputMode = 'decimal';
+
+    partsField.appendChild(partsLabel);
+    partsField.appendChild(partsInput);
+
+    const laborField = document.createElement('div');
+    laborField.className = 'field';
+    const laborLabel = document.createElement('span');
+    laborLabel.textContent = 'Labor';
+    const laborInput = document.createElement('input');
+    laborInput.type = 'number';
+    laborInput.min = '0';
+    laborInput.value = issue.labor;
+    laborInput.inputMode = 'decimal';
+
+    laborField.appendChild(laborLabel);
+    laborField.appendChild(laborInput);
+
+    row.appendChild(partsField);
+    row.appendChild(laborField);
+
+    card.appendChild(head);
+    card.appendChild(sub);
+    card.appendChild(row);
+
+    // Event wiring
+
+    checkbox.addEventListener('change', function () {
+      toggleIssueSelection(issue.id, checkbox.checked, card);
+    });
+
+    card.addEventListener('click', function (event) {
+      const target = event.target;
+      if (target === checkbox || target === partsInput || target === laborInput) {
+        return;
+      }
+      const willSelect = !checkbox.checked;
+      checkbox.checked = willSelect;
+      toggleIssueSelection(issue.id, willSelect, card);
+    });
+
+    partsInput.addEventListener('input', function () {
+      const val = parseFloat(partsInput.value);
+      issue.parts = Number.isFinite(val) ? val : 0;
+      updateSummary();
+    });
+
+    laborInput.addEventListener('input', function () {
+      const val = parseFloat(laborInput.value);
+      issue.labor = Number.isFinite(val) ? val : 0;
+      updateSummary();
+    });
+
+    return card;
+  }
+
+  function toggleIssueSelection(issueId, isOn, cardNode) {
+    if (isOn) {
+      selectedIssueIds.add(issueId);
+      cardNode.classList.add('checked');
+    } else {
+      selectedIssueIds.delete(issueId);
+      cardNode.classList.remove('checked');
+    }
+    updateSummary();
+  }
+
+  function renderIssues() {
+    dom.issuesGrid.innerHTML = '';
+    issues.forEach(issue => {
+      const card = buildIssueCard(issue);
+      dom.issuesGrid.appendChild(card);
+    });
+  }
+
+  // ----- Trades storage -----
+
+  function loadTrades() {
+    try {
+      const raw = sessionStorage.getItem(TRADE_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveTrades(trades) {
+    try {
+      sessionStorage.setItem(TRADE_STORAGE_KEY, JSON.stringify(trades));
+    } catch (err) {
+      // Ignore storage errors
+    }
+  }
+
+  function addTradeToStorage(trade) {
+    let trades = loadTrades();
+    trades.push(trade);
+
+    // Keep only the last 5 trades (newest at the end).
+    if (trades.length > 5) {
+      trades = trades.slice(trades.length - 5);
+    }
+
+    saveTrades(trades);
+    return trades;
+  }
+
+  // ----- Trades UI -----
+
+  function humanReadableModel(key) {
+    const cfg = MODELS[key];
+    return cfg ? cfg.label : key;
+  }
+
+  function renderStoredTrades(trades = loadTrades()) {
+    const container = dom.storedTradesEl;
+    container.innerHTML = '';
+
+    if (!trades.length) {
+      const empty = document.createElement('div');
+      empty.className = 'muted';
+      empty.textContent = 'No trades stored this session.';
+      container.appendChild(empty);
+      return;
+    }
+
+    const header = document.createElement('div');
+    header.className = 'muted';
+    header.style.marginBottom = '8px';
+    header.textContent = 'Recent trades (max 5 for this session):';
+    container.appendChild(header);
+
+    trades.forEach(trade => {
+      const item = document.createElement('div');
+      item.className = 'trade-item';
+
+      const title = document.createElement('div');
+      title.className = 'trade-title';
+      title.textContent = humanReadableModel(trade.model);
+
+      const meta = document.createElement('div');
+      meta.className = 'trade-meta';
+      meta.textContent = `Like‑New: ${formatCurrency(trade.likeNew)} • Added: ${trade.timestamp}`;
+
+      // Contact info (phone and city)
+      const contactParts = [];
+      if (trade.phone) contactParts.push(`Phone: ${trade.phone}`);
+      if (trade.city) contactParts.push(`City: ${trade.city}`);
+      
+      if (contactParts.length > 0) {
+        const contactDiv = document.createElement('div');
+        contactDiv.className = 'trade-contact';
+        contactDiv.textContent = contactParts.join(' • ');
+        item.appendChild(title);
+        item.appendChild(meta);
+        item.appendChild(contactDiv);
+      } else {
+        item.appendChild(title);
+        item.appendChild(meta);
+      }
+
+      const issuesText = document.createElement('div');
+      issuesText.className = 'trade-issues';
+      const issueTitles = trade.selectedIssues && trade.selectedIssues.length
+        ? trade.selectedIssues.map(i => i.title).join(', ')
+        : 'None';
+      issuesText.textContent = 'Issues: ' + issueTitles;
+
+      const totals = document.createElement('div');
+      totals.className = 'trade-totals';
+      totals.innerHTML =
+        `Parts: ${formatCurrency(trade.parts)} &nbsp;|&nbsp; ` +
+        `Labor: ${formatCurrency(trade.labor)} &nbsp;|&nbsp; ` +
+        `Repair: ${formatCurrency(trade.repair)}<br>` +
+        `Offer: ${formatCurrency(trade.offer)} &nbsp;|&nbsp; ` +
+        `Profit: ${formatCurrency(trade.profit)}`;
+
+      item.appendChild(issuesText);
+      item.appendChild(totals);
+
+      // Add link if present
+      if (trade.url && isValidUrl(trade.url)) {
+        const linkDiv = document.createElement('div');
+        linkDiv.className = 'trade-link';
+        const anchor = document.createElement('a');
+        anchor.href = trade.url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.textContent = 'Link';
+        linkDiv.appendChild(anchor);
+        item.appendChild(linkDiv);
+      }
+
+      container.appendChild(item);
+    });
+  }
+
+  // ----- Actions -----
+
+  function buildTradeObject() {
+    const modelKey = getCurrentModelKey();
+    const totals = calculateTotals();
+    const now = new Date();
+    const urlValue = dom.tradeUrlInput.value.trim();
+    const phoneValue = dom.sellerPhoneInput.value.trim();
+    const cityValue = dom.sellerCityInput.value.trim();
+
+    return {
+      id: now.getTime(),
+      model: modelKey,
+      likeNew: totals.likeNew,
+      selectedIssues: totals.selectedIssues.map(i => ({
+        id: i.id,
+        title: i.title,
+        parts: i.parts,
+        labor: i.labor
+      })),
+      parts: totals.parts,
+      labor: totals.labor,
+      repair: totals.repair,
+      offer: totals.offer,
+      profit: totals.profit,
+      url: urlValue && isValidUrl(urlValue) ? urlValue : null,
+      phone: phoneValue || null,
+      city: cityValue || null,
+      timestamp: now.toLocaleString()
+    };
+  }
+
+  function resetCalculator() {
+    // Reset issues to defaults and clear selections.
+    issues = deepClone(DEFAULT_ISSUES);
+    selectedIssueIds.clear();
+
+    // Reset adjustable prices to current model defaults
+    const modelCfg = getCurrentModelConfig();
+    adjustableLikeNew = modelCfg.defaultLikeNew;
+    adjustableOffer = modelCfg.defaultOffer;
+
+    // Clear all contact fields
+    dom.tradeUrlInput.value = '';
+    dom.sellerPhoneInput.value = '';
+    dom.sellerCityInput.value = '';
+
+    renderIssues();
+    updateSummary();
+  }
+
+  function handleAddTradeClick() {
+    const trade = buildTradeObject();
+    const trades = addTradeToStorage(trade);
+    renderStoredTrades(trades);
+    resetCalculator();
+  }
+
+  // ----- Adjustable input handlers -----
+
+  function clampToStep(val, step = 5) {
+    return Math.round(val / step) * step;
+  }
+
+  function clampNonNegative(val) {
+    return val < 0 ? 0 : val;
+  }
+
+  function incrementValue(value, step = 5) {
+    return clampNonNegative(value + step);
+  }
+
+  function decrementValue(value, step = 5) {
+    return clampNonNegative(value - step);
+  }
+
+  function updateLikeNew(value) {
+    const modelCfg = getCurrentModelConfig();
+    adjustableLikeNew = clampToStep(Number(value), 5);
+    if (adjustableLikeNew < adjustableOffer) {
+      // Adjust offer down to likeNew if greater
+      adjustableOffer = adjustableLikeNew;
+    }
+    updateSummary();
+  }
+
+  function updateOffer(value) {
+    const modelCfg = getCurrentModelConfig();
+    adjustableOffer = clampToStep(Number(value), 5);
+    if (adjustableOffer > adjustableLikeNew) {
+      adjustableOffer = adjustableLikeNew;
+    }
+    updateSummary();
+  }
+
+  // ----- Initialization -----
+
+  function bindEvents() {
+    dom.modelSelect.addEventListener('change', function () {
+      const modelCfg = getCurrentModelConfig();
+      adjustableLikeNew = modelCfg.defaultLikeNew;
+      adjustableOffer = modelCfg.defaultOffer;
+      renderIssues();
+      updateSummary();
+    });
+
+    dom.addTradeBtn.addEventListener('click', handleAddTradeClick);
+
+    // LikeNew input events
+    dom.likeNewInput.addEventListener('change', (e) => {
+      updateLikeNew(e.target.value);
+    });
+    dom.likeNewInput.addEventListener('input', (e) => {
+      // optional live update?
+    });
+    dom.likeNewUp.addEventListener('click', () => {
+      updateLikeNew(adjustableLikeNew + 5);
+    });
+    dom.likeNewDown.addEventListener('click', () => {
+      updateLikeNew(adjustableLikeNew - 5);
+    });
+
+    // Offer input events
+    dom.offerInput.addEventListener('change', (e) => {
+      updateOffer(e.target.value);
+    });
+    dom.offerInput.addEventListener('input', (e) => {
+      // optional live update?
+    });
+    dom.offerUp.addEventListener('click', () => {
+      updateOffer(adjustableOffer + 5);
+    });
+    dom.offerDown.addEventListener('click', () => {
+      updateOffer(adjustableOffer - 5);
+    });
+  }
+
+  function init() {
+    const modelCfg = getCurrentModelConfig();
+    adjustableLikeNew = modelCfg.defaultLikeNew;
+    adjustableOffer = modelCfg.defaultOffer;
+    renderIssues();
+    updateSummary();
+    renderStoredTrades();
+    bindEvents();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
