@@ -1,84 +1,1006 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IpCalc by Rvd</title>
+  <title data-i18n-key="title">IPPM Analyzer</title>
   <style>
-    :root{
-      --bg:#0d0f11; --card:#161a1d; --muted:#7d8b92; --accent:#35c6d8; --danger:#ff4a60;
-      --radius:10px; --shadow:0 6px 22px rgba(0,0,0,0.45);
-      font-family: Inter, system-ui;
+    /* ---------------------------------- */
+    /* 1. Base Variables (Dark Mode Default) */
+    /* ---------------------------------- */
+    :root {
+      --bg: #0d0f11;
+      --card: #161a1d;
+      --muted: #7d8b92;
+      --accent: #00bcd4; /* Brighter Cyan */
+      --danger: #ff4a60;
+      --success: #32d664;
+      --warning: #ffb700;
+      --text: #e8eef0;
+      --input-bg: #252a30;
+      --input-border: #3c4146;
+      --radius: 8px;
+      --shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color-scheme: dark;
-    }
-    *{box-sizing:border-box}
-    body{background:var(--bg); color:#e8eef0; padding:20px; margin:0}
-    .wrap{max-width:920px; margin:0 auto}
-
-    header{display:flex; gap:16px; align-items:center; margin-bottom:18px}
-    h1{font-size:20px; margin:0 0 4px}
-    p.lead{margin:0; color:var(--muted); font-size:13px}
-
-    .main{display:grid; grid-template-columns:1fr 360px; gap:18px}
-    .left, .right { background:var(--card); padding:16px; border-radius:var(--radius); box-shadow:var(--shadow); }
-
-    .small{font-size:12px; color:var(--muted); display:block; margin-bottom:4px}
-    .muted{color:var(--muted); font-size:12px}
-    .big{font-size:18px; font-weight:600}
-
-    .boxes{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:10px;
-      margin-top:12px;
+      transition: all 0.3s ease;
     }
 
-    .issue {
-      border-radius:10px; padding:12px; background:#1c2124;
-      border:1px solid #2a2f33; cursor:pointer; display:flex; flex-direction:column;
-      gap:10px; min-height:86px; transition:0.12s;
-    }
-    .issue.checked{box-shadow:0 8px 24px rgba(53,198,216,0.18); border-color:var(--accent)}
-    .issue:hover{transform:translateY(-3px)}
-    .issue-title{font-weight:600; font-size:14px}
-    .issue-sub{font-size:12px;color:var(--muted)}
-    .issue-head{display:flex; align-items:center; gap:8px}
-
-    .parts-row{display:flex; justify-content:space-between; gap:8px}
-    .field{flex:1; font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:4px}
-    .field input{
-      width:100%; padding:6px 8px; border-radius:8px;
-      border:1px solid #333; background:#111; color:#e8eef0;
-      font-size:13px;
-    }
-
-    select{
-      background:#111; color:#e8eef0; border:1px solid #333;
-      padding:8px; border-radius:8px; width:100%; margin-bottom:8px;
-      font-size:14px;
+    /* ---------------------------------- */
+    /* 2. Light Mode Variables */
+    /* ---------------------------------- */
+    [data-theme="light"] {
+        --bg: #f5f8fa;
+        --card: #ffffff;
+        --muted: #6b7785;
+        --accent: #007bff; 
+        --danger: #dc3545;
+        --success: #28a745;
+        --warning: #ffc107;
+        --text: #1f2933;
+        --input-bg: #eaf0f6;
+        --input-border: #cdd5df;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        color-scheme: light;
     }
 
-    .row{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px}
-    .summary-box{background:#1c2124; border:1px solid #2a2f33; padding:12px; border-radius:8px}
+    * {
+      box-sizing: border-box;
+      direction: ltr; /* Default LTR, adjusted by JS for HE */
+    }
+    html[lang="he"] * {
+        direction: rtl;
+        text-align: right;
+    }
 
-    .line{display:flex; justify-content:space-between; padding:8px; border-radius:6px; background:#111; font-size:13px}
-    .accent{color:var(--accent); font-weight:700}
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      margin: 0;
+      text-align: left;
+      transition: background 0.3s, color 0.3s;
+    }
 
-    .contact-fields {
-      margin-top: 12px;
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    header {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 24px;
+      justify-content: space-between;
     }
 
-    .contact-row {
+    .header-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    p.lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .main {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
     }
 
-    .input-group {
+    .left,
+    .right {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    
+    .left h2, .right h2 {
+        font-size: 20px;
+        margin-top: 0;
+        border-bottom: 1px solid var(--input-border);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* Input and Form Elements */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    
+    html[lang="he"] label {
+        text-align: right;
+    }
+
+    input:not([type="checkbox"]),
+    select,
+    button {
+      width: 100%;
+      padding: 12px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 16px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    input[type="number"] {
+        width: auto;
+        -moz-appearance: textfield; 
+    }
+    input[type="number"]::-webkit-inner-spin-button, 
+    input[type="number"]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      outline: 1px solid var(--accent);
+    }
+
+    /* Slider Component */
+    input[type="range"] {
+        -webkit-appearance: none;
+        height: 8px;
+        background: var(--input-border);
+        border-radius: 5px;
+        margin: 7px 0;
+        cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent);
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    /* Buttons */
+    .btn-group {
       display: flex;
+      gap: 5px;
+    }
+
+    .btn-group button {
+      width: 40px;
+      padding: 0;
+      font-size: 18px;
+      background: var(--input-border);
+      color: var(--text);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-group button:hover {
+        background: var(--accent);
+        color: var(--card);
+    }
+    
+    .input-with-btns {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .input-with-btns input {
+        flex-grow: 1;
+    }
+    
+    .input-with-btns .btn-group button {
+        height: 44px;
+    }
+
+
+    /* --- ISSUES / CHECKBOX STYLES --- */
+    #issuesList {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed var(--input-border);
+      border-radius: var(--radius);
+    }
+    
+    #issuesList > div { 
+        margin-bottom: 12px;
+        padding: 10px;
+        border: 2px solid var(--card);
+        border-radius: 6px;
+        background: var(--input-bg);
+        transition: border 0.3s, box-shadow 0.3s, background 0.3s;
+        cursor: pointer;
+    }
+    
+    /* Glowing Border for Selected Issue */
+    #issuesList > div.selected-issue {
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
+        background: color-mix(in srgb, var(--input-bg), var(--accent) 5%); 
+    }
+
+    .issue-manual-cost {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        padding-left: 20px; 
+        align-items: center;
+    }
+    .issue-manual-cost input {
+        width: 80px;
+        text-align: center;
+        padding: 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+    .issue-manual-cost label {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 0;
+        font-weight: normal;
+    }
+    .issue-checkbox {
+        display: none;
+    }
+    .issue-label-text {
+        font-size: 15px;
+        color: var(--text);
+        font-weight: 500;
+    }
+    /* RTL adjustments for issue list */
+    html[lang="he"] .issue-manual-cost {
+        padding-left: 0;
+        padding-right: 20px;
+    }
+    html[lang="he"] .issue-label-text {
+        text-align: right;
+    }
+    /* --- END ISSUES STYLES --- */
+
+    /* Summary and Results */
+    .summary-box {
+        margin-top: 25px;
+        border: 1px solid var(--accent);
+        padding: 18px;
+        border-radius: var(--radius);
+        background: color-mix(in srgb, var(--card), var(--accent) 3%);
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+    .summary-item span:first-child {
+        color: var(--muted);
+    }
+    .summary-item.total-offer span:last-child {
+        font-size: 20px;
+        color: var(--warning);
+        font-weight: 700;
+    }
+    .summary-item.profit-margin span:last-child {
+        color: var(--success);
+    }
+    .summary-item.total-cost span:last-child {
+        color: var(--warning);
+    }
+    .summary-item.net-profit span:last-child {
+        font-size: 28px;
+        font-weight: 800;
+    }
+    .summary-item.net-profit {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--input-border);
+    }
+    
+    /* Theme Toggle Button & Language Select */
+    .control-button {
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        cursor: pointer;
+        font-size: 20px;
+        color: var(--muted);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s, background 0.2s, border-color 0.2s;
+        padding: 0;
+    }
+    .control-button:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    #langSelect {
+        width: 60px;
+        height: 40px;
+        border-radius: 20px;
+        padding: 0 10px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    
+    /* Parts List Section (Replaces Notes) */
+    #partsListSection {
+        margin-top: 25px;
+        padding: 18px;
+        border-radius: var(--radius);
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+    }
+    #partsListSection h4 {
+        color: var(--accent);
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    #partsListSection ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+    }
+    #partsListSection li {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 1.5;
+        font-weight: 500;
+    }
+    #partsListSection li span:first-child {
+        color: var(--muted);
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 data-i18n-key="title">IPPM Analyzer Analyzer</h1>
+        <p class="lead" data-i18n-key="lead">Made by Tal Ravid</p>
+      </div>
+      <div class="header-controls">
+        <button id="themeToggle" class="control-button" title="Toggle Day/Night Mode">☀️</button>
+        <select id="langSelect">
+            <option value="en" selected>EN</option>
+            <option value="he">HE</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="main">
+      <div class="right">
+        <h2 data-i18n-key="details_h2">Device Details & Repair Costs (ILS)</h2>
+        
+        <div class="form-group">
+          <label for="modelSelect" data-i18n-key="device_model">Device Model</label>
+          <select id="modelSelect">
+            <option value="iphone 16 pro max">iPhone 16 Pro Max 256GB</option>
+            <option value="iphone 15 pro max">iPhone 15 Pro Max 256GB</option>
+            <option value="iphone 14 pro max">iPhone 14 Pro Max 256GB</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+            <label for="batteryHealthSlider" data-i18n-key="battery_health">Battery Health (%)</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" min="80" max="100" value="100" class="slider" id="batteryHealthSlider" style="flex-grow: 1;">
+                <input type="number" min="80" max="100" value="100" id="batteryHealthInput" style="width: 65px; text-align: center;">
+            </div>
+            <div id="batteryPenaltyDisplay" style="color: var(--warning); font-size: 12px; margin-top: 5px;"></div>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n-key="defects_label">Defects and Repair Items (ILS)</label>
+            <div id="issuesList">
+                <span data-i18n-key="select_model_prompt">Please select a model to load issues.</span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="additionalCostsInput" data-i18n-key="additional_costs">Additional Purchase Overhead (Fuel/Misc Fees) ₪</label>
+            <input type="number" id="additionalCostsInput" value="0" min="0">
+        </div>
+
+        <div class="form-group">
+            <label for="platformFeeInput" data-i18n-key="platform_fee">Selling Platform Fee / Commission ₪</label>
+            <input type="number" id="platformFeeInput" value="0" min="0">
+        </div>
+
+      </div>
+
+      <div class="left">
+        <h2 data-i18n-key="analysis_h2">Profitability Analysis (ILS)</h2>
+        
+        <div class="form-group">
+            <label for="likeNewInput" data-i18n-key="target_sell_price">Target Selling Price (Mint Condition) ₪</label>
+            <div class="input-with-btns">
+                <input type="number" id="likeNewInput" value="0" min="1000">
+                <div class="btn-group">
+                    <button id="likeNewUp">+</button>
+                    <button id="likeNewDown">-</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="actualOfferInput" data-i18n-key="actual_offer_price">Actual Purchase Price (Offer to Seller) ₪</label>
+            <div class="input-with-btns">
+                <input type="number" id="actualOfferInput" value="0" min="0">
+                <div class="btn-group">
+                    <button id="offerUp">+</button>
+                    <button id="offerDown">-</button>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="summary-box">
+            <h4 data-i18n-key="financial_breakdown">Financial Breakdown:</h4>
+            
+            <div class="summary-item total-offer">
+                <span data-i18n-key="max_offer">MAX Break-Even Offer</span>
+                <span id="maxOfferDisplay">0 ₪</span>
+            </div>
+            <hr style="border-color:var(--input-border); margin: 10px 0;">
+
+            <div class="summary-item">
+                <span data-i18n-key="total_parts_cost">Total Parts Cost (Cash Expense)</span>
+                <span id="totalPartsCostDisplay">0 ₪</span>
+            </div>
+            <div class="summary-item">
+                <span data-i18n-key="labor_value">Repair Labor Value (Your Potential Profit)</span>
+                <span id="totalLaborCostDisplay">0 ₪</span>
+            </div>
+            <div class="summary-item total-cost">
+                <span data-i18n-key="total_cash_investment">Total Cash Investment (Offer + Expenses)</span>
+                <span id="totalCostDisplay">0 ₪</span>
+            </div>
+            <div class="summary-item profit-margin">
+                <span data-i18n-key="expected_margin">Expected Total Profit Margin (Includes Labor)</span>
+                <span id="profitMarginDisplay">0%</span>
+            </div>
+            <div class="summary-item net-profit">
+                <span data-i18n-key="net_cash_profit">Expected **Net Cash** Profit</span>
+                <span id="netProfitDisplay">0 ₪</span>
+            </div>
+        </div>
+        
+        <div id="partsListSection">
+            </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dom = {};
+    const CURRENCY_SYMBOL = ' ₪'; 
+    const TAX_MULTIPLIER = 1.17; 
+    const BATTERY_CRITICAL_THRESHOLD = 88;
+    
+    let adjustableLikeNew = 0;
+    let adjustableActualOffer = 0; 
+    let currentLang = 'en';
+
+    // --- I18N Translation Object ---
+    const i18n = {
+        'en': {
+            'title': 'IPPM Repair Cost Calculator ',
+            'lead': 'Made by Tal Ravid.',
+            'details_h2': 'Device Details & Repair Costs (ILS)',
+            'device_model': 'Device Model',
+            'battery_health': 'Battery Health (%)',
+            'defects_label': 'Defects and Repair Items (ILS)',
+            'select_model_prompt': 'Please select a model to load issues.',
+            'additional_costs': 'Additional Trade Fee (Bus/Train/etc) ₪',
+            'platform_fee': 'Selling Platform Fee / Commission ₪',
+            'analysis_h2': 'Profitability Analysis (ILS)',
+            'target_sell_price': 'Target Selling Price (Mint Condition) ₪',
+            'actual_offer_price': 'Actual Purchase Price (Offer to Seller) ₪',
+            'financial_breakdown': 'Financial Breakdown:',
+            'max_offer': 'MAX Break-Even Offer',
+            'total_parts_cost': 'Total Parts Cost (Cash Expense)',
+            'labor_value': 'Repair Labor Value (Your Potential Profit)',
+            'total_cash_investment': 'Total Cash Investment (Offer + Expenses)',
+            'expected_margin': 'Expected Total Profit Margin (Includes Labor)',
+            'net_cash_profit': 'Expected **Net Cash** Profit',
+            'parts_list_h4': 'Required Parts and Cash Cost',
+            'parts_cost_label': 'Parts Cost (Base Price):',
+            'labor_value_label': 'Labor Value:',
+            'total_repair_cost': 'Total Repair Cost:',
+            'battery_critical': '**CRITICAL THRESHOLD!** Battery health at {health}%. Estimated replacement cost: {cost}{symbol}. This cost is included via the auto-checked \'Battery <88%\' issue.',
+            'issue_broken_back': 'Broken Back Glass',
+            'issue_broken_screen': 'Broken Screen (Glass Only)',
+            'issue_broken_lcd': 'Broken Screen + LCD',
+            'issue_battery_low': 'Battery <88%',
+            'issue_camera_issues': 'Camera Replacement',
+            'issue_lens_broken': 'Broken Lens x1',
+            'no_parts_needed': 'No parts are required for this trade.',
+            'cash_cost': 'Cash Cost (Parts + VAT)'
+        },
+        'he': {
+            'title': 'מחשבון מחירי תיקון ומכירה',
+            'lead': 'נבנה על ידי טל רביד.',
+            'details_h2': 'פרטי מכשיר ועלויות תיקון (₪)',
+            'device_model': 'דגם המכשיר',
+            'battery_health': 'בריאות סוללה (%)',
+            'defects_label': 'פגמים ורכיבי תיקון (₪)',
+            'select_model_prompt': 'אנא בחר דגם כדי לטעון פגמים.',
+            'additional_costs': 'עלויות רכישה נוספות נסיעות ושונות) ₪',
+            'platform_fee': 'עמלת פלטפורמת מכירה / עמלה ₪',
+            'analysis_h2': 'ניתוח רווחיות (₪)',
+            'target_sell_price': 'מחיר מכירה יעד (מצב חדש) ₪',
+            'actual_offer_price': 'מחיר רכישה בפועל (הצעה למוכר) ₪',
+            'financial_breakdown': 'פירוט פיננסי:',
+            'max_offer': 'הצעת מקסימום (נקודת איזון)',
+            'total_parts_cost': 'סה"כ עלות חלקים (הוצאה במזומן)',
+            'labor_value': 'ערך עבודת תיקון (הרווח הפוטנציאלי שלך)',
+            'total_cash_investment': 'סה"כ השקעה במזומן (הצעה + הוצאות)',
+            'expected_margin': 'רווח שולי כולל צפוי (כולל עבודה)',
+            'net_cash_profit': 'רווח **מזומן נקי** צפוי',
+            'parts_list_h4': 'חלקים נדרשים ועלות מזומן',
+            'parts_cost_label': 'עלות חלקים (מחיר בסיס):',
+            'labor_value_label': 'ערך עבודה:',
+            'total_repair_cost': 'סה"כ עלות תיקון:',
+            'battery_critical': '**סף קריטי!** בריאות סוללה ב-{health}%. עלות החלפה משוערת: {cost}{symbol}. עלות זו נכללת באמצעות הסימון האוטומטי של \'סוללה <88%\'.',
+            'issue_broken_back': 'זכוכית גב שבורה',
+            'issue_broken_screen': 'מסך שבור (זכוכית בלבד)',
+            'issue_broken_lcd': 'מסך + LCD שבורים',
+            'issue_battery_low': 'סוללה <88%',
+            'issue_camera_issues': 'החלפת מצלמה',
+            'issue_lens_broken': 'עדשה שבורה x1',
+            'no_parts_needed': 'לא נדרשים חלקים עבור עסקה זו.',
+            'cash_cost': 'עלות במזומן (חלק + מע"מ)'
+        }
+    };
+    
+    // Model configuration - Using i18n keys for labels
+    const modelConfig = {
+      "iphone 16 pro max": {
+        defaultLikeNew: 3400, defaultOffer: 3000,
+        repairCosts: {
+          "broken_back": { labelKey: 'issue_broken_back', parts: 25, labor: 250 },
+          "broken_screen": { labelKey: 'issue_broken_screen', parts: 50, labor: 700 },
+          "broken_lcd": { labelKey: 'issue_broken_lcd', parts: 540, labor: 400 }, 
+          "battery_low": { labelKey: 'issue_battery_low', parts: 60, labor: 190 },
+          "camera_issues": { labelKey: 'issue_camera_issues', parts: 180, labor: 420 },
+          "lens_broken": { labelKey: 'issue_lens_broken', parts: 25, labor: 250 }
+        }
+      },
+      "iphone 15 pro max": {
+        defaultLikeNew: 2500, defaultOffer: 2000,
+        repairCosts: {
+          "broken_back": { labelKey: 'issue_broken_back', parts: 25, labor: 275 },
+          "broken_screen": { labelKey: 'issue_broken_screen', parts: 50, labor: 700 },
+          "broken_lcd": { labelKey: 'issue_broken_lcd', parts: 540, labor: 400 },
+          "battery_low": { labelKey: 'issue_battery_low', parts: 60, labor: 190 },
+          "camera_issues": { labelKey: 'issue_camera_issues', parts: 180, labor: 420 },
+          "lens_broken": { labelKey: 'issue_lens_broken', parts: 25, labor: 250 }
+        }
+      },
+      "iphone 14 pro max": {
+        defaultLikeNew: 1900, defaultOffer: 1500,
+        repairCosts: {
+          "broken_back": { labelKey: 'issue_broken_back', parts: 25, labor: 275 },
+          "broken_screen": { labelKey: 'issue_broken_screen', parts: 50, labor: 700 },
+          "broken_lcd": { labelKey: 'issue_broken_lcd', parts: 540, labor: 400 },
+          "battery_low": { labelKey: 'issue_battery_low', parts: 60, labor: 190 },
+          "camera_issues": { labelKey: 'issue_camera_issues', parts: 180, labor: 420 },
+          "lens_broken": { labelKey: 'issue_lens_broken', parts: 25, labor: 250 }
+        }
+      }
+    };
+
+    function getDOMElements() {
+      dom.modelSelect = document.getElementById('modelSelect');
+      dom.likeNewInput = document.getElementById('likeNewInput');
+      dom.likeNewUp = document.getElementById('likeNewUp');
+      dom.likeNewDown = document.getElementById('likeNewDown');
+      
+      dom.actualOfferInput = document.getElementById('actualOfferInput'); 
+      dom.offerUp = document.getElementById('offerUp');
+      dom.offerDown = document.getElementById('offerDown');
+
+      dom.maxOfferDisplay = document.getElementById('maxOfferDisplay'); 
+      
+      dom.issuesList = document.getElementById('issuesList');
+      dom.batteryHealthSlider = document.getElementById('batteryHealthSlider');
+      dom.batteryHealthInput = document.getElementById('batteryHealthInput');
+      dom.batteryPenaltyDisplay = document.getElementById('batteryPenaltyDisplay');
+      dom.additionalCostsInput = document.getElementById('additionalCostsInput');
+      dom.platformFeeInput = document.getElementById('platformFeeInput');
+      
+      dom.totalPartsCostDisplay = document.getElementById('totalPartsCostDisplay');
+      dom.totalLaborCostDisplay = document.getElementById('totalLaborCostDisplay'); 
+      dom.totalCostDisplay = document.getElementById('totalCostDisplay');
+      dom.netProfitDisplay = document.getElementById('netProfitDisplay');
+      dom.profitMarginDisplay = document.getElementById('profitMarginDisplay');
+      
+      dom.themeToggle = document.getElementById('themeToggle'); 
+      dom.langSelect = document.getElementById('langSelect');
+      dom.partsListSection = document.getElementById('partsListSection'); 
+    }
+
+    function getCurrentModelConfig() {
+      const selectedModel = dom.modelSelect.value;
+      return modelConfig[selectedModel] || { defaultLikeNew: 0, defaultOffer: 0, repairCosts: {} };
+    }
+
+    // --- I18N Logic ---
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.setAttribute('lang', lang);
+        document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+        
+        // Update static DOM elements
+        document.querySelectorAll('[data-i18n-key]').forEach(el => {
+            const key = el.getAttribute('data-i18n-key');
+            el.textContent = i18n[lang][key] || el.textContent;
+        });
+
+        // Re-render dynamic content
+        updateSummary();
+        renderIssues();
+    }
+    
+    function translate(key, replacements = {}) {
+        let text = i18n[currentLang][key] || i18n['en'][key] || `Missing key: ${key}`;
+        
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            text = text.replace(new RegExp(`{${placeholder}}`, 'g'), value);
+        }
+        return text;
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        if (html.getAttribute('data-theme') === 'light') {
+            html.removeAttribute('data-theme'); // Switching to Dark
+            dom.themeToggle.innerHTML = '☀️'; // Show Sun (for next switch to Light)
+        } else {
+            html.setAttribute('data-theme', 'light'); // Switching to Light
+            dom.themeToggle.innerHTML = '🌙'; // Show Moon (for next switch to Dark)
+        }
+        // No need to call updateSummary here as language change handles it
+    }
+    
+    function calculateBatteryPenalty(health) {
+      const modelCfg = getCurrentModelConfig();
+      const batteryRepairCost = (modelCfg.repairCosts.battery_low.parts || 0) + (modelCfg.repairCosts.battery_low.labor || 0); 
+
+      if (health > BATTERY_CRITICAL_THRESHOLD) { 
+          dom.batteryPenaltyDisplay.innerHTML = '';
+          return 0; 
+      }
+      
+      if (health <= BATTERY_CRITICAL_THRESHOLD) {
+          const cost = Math.round(batteryRepairCost).toLocaleString(currentLang === 'he' ? 'he-IL' : 'en-US');
+          const symbol = CURRENCY_SYMBOL;
+          const healthVal = health;
+
+          dom.batteryPenaltyDisplay.innerHTML = translate('battery_critical', { health: healthVal, cost: cost, symbol: symbol });
+          return 0; 
+      } 
+      
+      return 0;
+    }
+
+    function updateLikeNew(newValue) {
+      adjustableLikeNew = parseInt(newValue) || 0;
+      dom.likeNewInput.value = adjustableLikeNew;
+      updateSummary();
+    }
+    
+    function updateActualOffer(newValue) {
+      adjustableActualOffer = parseInt(newValue) || 0;
+      dom.actualOfferInput.value = adjustableActualOffer;
+      updateSummary();
+    }
+
+    function calculateRepairCosts() {
+        let totalPartsCost = 0;
+        let totalLaborCost = 0;
+        let selectedIssues = [];
+
+        dom.issuesList.querySelectorAll('.issue-checkbox:checked').forEach(checkbox => {
+            const issueKey = checkbox.dataset.issueKey;
+            
+            const partsInput = dom.issuesList.querySelector(`.parts-cost-input[data-issue-key="${issueKey}"]`);
+            const laborInput = dom.issuesList.querySelector(`.labor-cost-input[data-issue-key="${issueKey}"]`);
+            
+            let partsBase = parseInt(partsInput?.value || 0); 
+            const laborCost = parseInt(laborInput?.value || 0);
+            
+            let partsCostFinal = partsBase;
+            if (issueKey === 'broken_lcd') {
+                partsCostFinal = partsBase * TAX_MULTIPLIER; 
+            }
+            
+            totalPartsCost += partsCostFinal;
+            totalLaborCost += laborCost;
+            
+            selectedIssues.push({
+                key: issueKey,
+                labelKey: getCurrentModelConfig().repairCosts[issueKey].labelKey,
+                partsBase: partsBase,
+                partsFinal: partsCostFinal,
+                labor: laborCost
+            });
+        });
+        
+        return { 
+            parts: totalPartsCost, 
+            labor: totalLaborCost, 
+            total: totalPartsCost + totalLaborCost,
+            selectedIssues: selectedIssues
+        };
+    }
+
+    function handleIssueClick(event) {
+        const div = event.currentTarget;
+        const checkbox = div.querySelector('.issue-checkbox');
+        
+        // Toggle the checkbox state UNLESS the clicked element is an input field
+        const targetClass = event.target.classList;
+        if (targetClass.contains('parts-cost-input') || targetClass.contains('labor-cost-input')) {
+             // Do nothing if input is clicked, allow user to edit
+             return; 
+        }
+
+        checkbox.checked = !checkbox.checked;
+        handleIssueVisualUpdate(checkbox);
+        updateSummary();
+    }
+    
+    function handleIssueVisualUpdate(checkbox) {
+        const parentDiv = checkbox.closest('[data-issue-id]');
+        if (checkbox.checked) {
+            parentDiv.classList.add('selected-issue');
+        } else {
+            parentDiv.classList.remove('selected-issue');
+        }
+    }
+
+    function renderIssues() {
+      const modelCfg = getCurrentModelConfig();
+      const costs = modelCfg.repairCosts;
+      let html = '';
+      
+      const partsCostLabel = translate('parts_cost_label');
+      const laborValueLabel = translate('labor_value_label');
+      const totalRepairCostLabel = translate('total_repair_cost');
+
+
+      for (const key in costs) {
+        const item = costs[key];
+        
+        let initialPartsForDisplay = item.parts;
+        if (key === 'broken_lcd') {
+            initialPartsForDisplay = item.parts * TAX_MULTIPLIER;
+        }
+
+        const initialLabor = item.labor;
+        const totalRepairCost = initialPartsForDisplay + initialLabor; 
+        
+        html += `
+          <div data-issue-id="${key}" class="issue-item">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" class="issue-checkbox" data-issue-key="${key}"> 
+                  <span class="issue-label-text">${translate(item.labelKey)} (${totalRepairCostLabel} ${Math.round(totalRepairCost).toLocaleString(currentLang === 'he' ? 'he-IL' : 'en-US')}${CURRENCY_SYMBOL})</span>
+              </label>
+              <div class="issue-manual-cost">
+                  <label>${partsCostLabel}</label>
+                  <input type="number" class="parts-cost-input" data-issue-key="${key}" value="${Math.round(item.parts)}" min="0"> 
+                  <label>${laborValueLabel}</label>
+                  <input type="number" class="labor-cost-input" data-issue-key="${key}" value="${item.labor}" min="0">
+              </div>
+          </div>
+        `;
+      }
+
+      dom.issuesList.innerHTML = html || `<span data-i18n-key="select_model_prompt">${translate('select_model_prompt')}</span>`;
+      bindIssueEvents(); 
+      dom.issuesList.querySelectorAll('.issue-checkbox').forEach(handleIssueVisualUpdate);
+    }
+    
+    // NEW: Renders the Parts List
+    function renderPartsList(repairCosts) {
+        const selectedIssues = repairCosts.selectedIssues;
+        let html = `<h4>${translate('parts_list_h4')}</h4><ul>`;
+        
+        if (selectedIssues.length === 0) {
+            html += `<li><span style="color:var(--text);">${translate('no_parts_needed')}</span></li>`;
+        } else {
+            selectedIssues.forEach(issue => {
+                let costLabel = '';
+                // Only broken_lcd includes tax in the final cash cost calculation.
+                if (issue.key === 'broken_lcd') {
+                    costLabel = translate('cash_cost'); // Use specific label for taxed item
+                } else {
+                    costLabel = translate('total_parts_cost'); 
+                }
+                
+                html += `<li>
+                    <span>${translate(issue.labelKey)}</span>
+                    <span style="font-weight:700;">${Math.round(issue.partsFinal).toLocaleString(currentLang === 'he' ? 'he-IL' : 'en-US')}${CURRENCY_SYMBOL}</span>
+                </li>`;
+            });
+        }
+        
+        html += '</ul>';
+        dom.partsListSection.innerHTML = html;
+    }
+
+
+    function updateSummary() {
+      const actualOffer = adjustableActualOffer; 
+      const likeNew = adjustableLikeNew; 
+      const additionalCosts = parseInt(dom.additionalCostsInput.value) || 0;
+      const platformFee = parseInt(dom.platformFeeInput.value) || 0;
+      
+      const currentBatteryHealth = parseInt(dom.batteryHealthInput.value);
+
+      // --- Auto-check/Auto-uncheck Battery Issue Logic ---
+      const batteryCheckbox = dom.issuesList.querySelector(`.issue-checkbox[data-issue-key="battery_low"]`);
+      if (batteryCheckbox) {
+          const isBatteryCritical = currentBatteryHealth <= BATTERY_CRITICAL_THRESHOLD;
+          const needsVisualUpdate = batteryCheckbox.checked !== isBatteryCritical;
+          
+          batteryCheckbox.checked = isBatteryCritical;
+          if (needsVisualUpdate) {
+              handleIssueVisualUpdate(batteryCheckbox);
+          }
+      }
+      
+      const repairCosts = calculateRepairCosts(); 
+      const batteryPenalty = calculateBatteryPenalty(currentBatteryHealth); 
+
+      // 1. Total Cash Expenses 
+      const cashExpenses = repairCosts.parts + additionalCosts + batteryPenalty + platformFee;
+
+      // 2. Net Selling Price
+      const netSellPrice = likeNew; 
+
+      // 3. MAX Break-Even Offer
+      const maxOffer = Math.max(0, Math.round(netSellPrice - cashExpenses));
+      
+      // 4. Total Cash Investment 
+      const totalCashInvestment = actualOffer + cashExpenses; 
+      
+      // 5. Net Cash Profit
+      const netCashProfit = netSellPrice - totalCashInvestment; 
+      
+      // 6. Total Expected Profit (for Margin calculation)
+      const totalExpectedProfitForMargin = netCashProfit + repairCosts.labor; 
+      
+      // 7. Total Profit Margin (%)
+      const profitMarginBase = netSellPrice;
+      const profitMargin = profitMarginBase > 0 ? ((totalExpectedProfitForMargin / profitMarginBase) * 100).toFixed(1) : 0;
+      
+      // Formatting helper
+      const formatNumber = (num) => num.toLocaleString(currentLang === 'he' ? 'he-IL' : 'en-US');
+
+      // --- Update Display ---
+      
+      dom.maxOfferDisplay.textContent = `${formatNumber(maxOffer)}${CURRENCY_SYMBOL}`;
+
+      dom.totalPartsCostDisplay.textContent = `${formatNumber(Math.round(repairCosts.parts))}${CURRENCY_SYMBOL}`;
+      dom.totalLaborCostDisplay.textContent = `${formatNumber(repairCosts.labor)}${CURRENCY_SYMBOL}`; 
+      dom.totalCostDisplay.textContent = `${formatNumber(Math.round(totalCashInvestment))}${CURRENCY_SYMBOL}`;
+      dom.netProfitDisplay.textContent = `${formatNumber(Math.round(netCashProfit))}${CURRENCY_SYMBOL}`;
+      dom.profitMarginDisplay.textContent = `${profitMargin}%`;
+
+      // Coloring 
+      const isProfitable = netCashProfit > 0;
+      dom.netProfitDisplay.parentElement.style.color = isProfitable ? 'var(--success)' : 'var(--danger)';
+      dom.profitMarginDisplay.parentElement.style.color = isProfitable ? 'var(--success)' : 'var(--danger)';
+      
+      // --- Update Parts List (REPLACED NOTES) ---
+      renderPartsList(repairCosts);
+    }
+
+    function bindIssueEvents() {
+        dom.issuesList.querySelectorAll('.issue-item').forEach(div => {
+            div.removeEventListener('click', handleIssueClick); 
+            div.addEventListener('click', handleIssueClick);
+        });
+        
+        // Bind inputs for cost fields
+        dom.issuesList.querySelectorAll('.parts-cost-input, .labor-cost-input').forEach(el => {
+            el.removeEventListener('change', updateSummary); 
+            el.removeEventListener('input', updateSummary);
+            el.addEventListener('change', updateSummary);
+            el.addEventListener('input', updateSummary);
+        });
+    }
+
+    function bindEvents() {
+      dom.themeToggle.addEventListener('click', toggleTheme); 
+      dom.langSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+
+      dom.modelSelect.addEventListener('change', function () {
+        const modelCfg = getCurrentModelConfig();
+        updateLikeNew(modelCfg.defaultLikeNew); 
+        updateActualOffer(modelCfg.defaultOffer); 
+        renderIssues(); 
+      });
+
+      // Battery events
+      dom.batteryHealthSlider.addEventListener('input', function() {
+          dom.batteryHealthInput.value = this.value;
+          updateSummary();
+      });
+      dom.batteryHealthInput.addEventListener('change', function() {
+          dom.batteryHealthSlider.value = this.value;
+          updateSummary();
+      });
+      
+      // Like New Price events
+      dom.likeNewInput.addEventListener('change', (e) => updateLikeNew(e.target.value));
+      dom.likeNewUp.addEventListener('click', () => updateLikeNew(adjustableLikeNew + 50));
+      dom.likeNewDown.addEventListener('click', () => updateLikeNew(adjustableLikeNew - 50));
+      
+      // Actual Offer Price events (Manual Input)
+      dom.actualOfferInput.addEventListener('change', (e) => updateActualOffer(e.target.value));
+      dom.offerUp.addEventListener('click', () => updateActualOffer(adjustableActualOffer + 50));
+      dom.offerDown.addEventListener('click', () => updateActualOffer(adjustableActualOffer - 50));
+
+      // Cost events
+      dom.additionalCostsInput.addEventListener('change', updateSummary);
+      dom.platformFeeInput.addEventListener('change', updateSummary);
+    }
+
+    function init() {
+      getDOMElements();
+      bindEvents();
+      
+      // Initialize language (default is English)
+      setLanguage(dom.langSelect.value);
+
+      const modelCfg = getCurrentModelConfig();
+      updateLikeNew(modelCfg.defaultLikeNew);
+      updateActualOffer(modelCfg.defaultOffer); 
+      // renderIssues and updateSummary are called inside setLanguage
+    }
+
+    init();
+  </script>
+</body>
+</html>      display: flex;
       flex-direction: column;
       gap: 4px;
     }
